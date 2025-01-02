@@ -31,12 +31,35 @@ pub fn divider() -> std::io::Result<()> {
     Ok(())
 }
 
-/* OUTPUT ELEMENT END*/
+/* OUTPUT ELEMENTS END*/
 
 /* INPUT ELEMENT */
 
+pub struct InputElement {
+    id: u32,
+}
+
+impl InputElement {
+    pub fn new() -> Self {
+        InputElement { id: 0 }
+    }
+    pub fn text(&mut self, input_text: &str) -> std::io::Result<()> {
+        self.id += 1;
+        let mut url = String::from("http://127.0.0.1:8000/input/");
+        url += &self.id.to_string();
+        let component = html! {
+            input hx-post=(url) hx-include="this"
+            type="text" name="q" label={(input_text)}
+            hx-trigger="keyup delay:200ms changed";
+        };
+
+        append_to_index(component)?;
+        Ok(())
+    }
+}
+
 #[derive(FromForm)]
-struct InputData {
+pub struct InputData {
     q: String,
 }
 
@@ -44,21 +67,11 @@ struct InputData {
 fn options_handler(id: u8) -> &'static str {
     "Allowed methods: POST"
 }
+
 #[post("/input/<id>", data = "<form_data>")]
 fn input_taker(id: u8, form_data: Form<InputData>) -> String {
     println!("{id}, {}", form_data.q);
-    format!("Hello, {} year old named!", id)
-}
-
-pub fn text_input(input_text: &str) -> std::io::Result<()> {
-    let component = html! {
-        input hx-post="http://127.0.0.1:8000/input/1" hx-include="#thingi" id="thingi"
-        type="text" name="q" label={(input_text)}
-        hx-trigger="thingi, keyup delay:200ms changed";
-    };
-
-    append_to_index(component)?;
-    Ok(())
+    format!("got data from {}", id)
 }
 
 /* INPUT ELEMENT END*/
