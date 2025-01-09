@@ -1,13 +1,19 @@
 use prose::InputElement;
+use rocket::futures::FutureExt;
 
 #[rocket::main]
 async fn main() -> std::io::Result<()> {
     let mut ip = InputElement::new();
-    prose::init().await;
+    println!("{:?}", prose::INPUT_STORE);
     prose::write("whats poppin 3.0")?;
     prose::InputElement::text(&mut ip, "enter name")?;
     prose::InputElement::text(&mut ip, "enter some else")?;
     prose::divider()?;
-    /* have to decide how to maitain state, ie storing the input */
+    prose::init().await;
+
+    /*
+     * chicken and egg
+     * i need to figure out how to async properly
+    * */
     Ok(())
 }

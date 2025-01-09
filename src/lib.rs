@@ -4,14 +4,19 @@ use rocket::{FromForm, FromFormField};
 use rocket_cors::{AllowedOrigins, CorsOptions};
 
 use maud::html;
+use once_cell::sync::Lazy;
+use std::collections::HashMap;
+use std::sync::Mutex;
+
 use std::fs::File;
 use std::io::prelude::*;
-
 fn append_to_index(latest: maud::PreEscaped<String>) -> std::io::Result<()> {
     let mut file = File::options().append(true).open("dist/index.html")?;
     writeln!(&mut file, "{}", latest.into_string())?;
     Ok(())
 }
+
+pub static INPUT_STORE: Lazy<Mutex<HashMap<u8, String>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
 /* OUTPUT ELEMENTS*/
 pub fn write(output_text: &str) -> std::io::Result<()> {
@@ -46,10 +51,13 @@ impl InputElement {
     pub fn text(&mut self, input_text: &str) -> std::io::Result<()> {
         self.id += 1;
         let mut url = String::from("http://127.0.0.1:8000/input/");
+        let mut label = String::from(input_text);
+        label += ": ";
         url += &self.id.to_string();
         let component = html! {
+            label for=(input_text) {(label)}
             input hx-post=(url) hx-include="this"
-            type="text" name="q" label={(input_text)}
+            type="text" name="q"
             hx-trigger="keyup delay:200ms changed";
         };
 
@@ -70,6 +78,8 @@ fn options_handler(id: u8) -> &'static str {
 
 #[post("/input/<id>", data = "<form_data>")]
 fn input_taker(id: u8, form_data: Form<InputData>) -> String {
+    let mut store = INPUT_STORE.lock().unwrap();
+    store.insert(id, form_data.q.clone());
     println!("{id}, {}", form_data.q);
     format!("got data from {}", id)
 }

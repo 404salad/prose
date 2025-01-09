@@ -964,6 +964,7 @@ name = "prose"
 version = "0.1.0"
 dependencies = [
  "maud",
+ "once_cell",
  "rocket",
  "rocket_cors",
  "serde",
