@@ -14,6 +14,6 @@ async fn main() -> std::io::Result<()> {
     /*
      * chicken and egg
      * i need to figure out how to async properly
-    * */
+     * */
     Ok(())
 }
